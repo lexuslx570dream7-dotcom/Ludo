@@ -1,0 +1,1 @@
+ Build Android APK, on workflow dispatch and push to main, job build runs on ubuntu latest, steps: actions slash checkout at v4, setup Java 17 temurin with actions slash setup dash java at v4, setup gradle, build Android APK using gradle :app colon assembleDebug
