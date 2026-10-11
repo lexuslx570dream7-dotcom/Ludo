@@ -1,0 +1,6 @@
+{
+  "name": "Ludo Club",
+  "description": "A premium, realistic 3D Ludo board game featuring 2 & 4 player matches, team mode, tournaments, private rooms, and social chat.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,174 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile storing game stats, level, coins and gems.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The Firebase Auth UID of the user."
+        },
+        "username": {
+          "type": "string",
+          "description": "The display name of the player."
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Avatar image identifier or URL."
+        },
+        "coins": {
+          "type": "integer",
+          "description": "Total gold coins balance."
+        },
+        "gems": {
+          "type": "integer",
+          "description": "Total gems balance."
+        },
+        "level": {
+          "type": "integer",
+          "description": "Player level number."
+        },
+        "xp": {
+          "type": "integer",
+          "description": "Experience points accumulated."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Account creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last profile update timestamp."
+        }
+      },
+      "required": ["userId", "username", "coins", "gems", "level", "createdAt", "updatedAt"]
+    },
+    "GameRoom": {
+      "title": "GameRoom",
+      "description": "Realtime multiplayer game room synchronized across online players.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique room ID."
+        },
+        "mode": {
+          "type": "string",
+          "description": "Game mode type: TWO_PLAYER, FOUR_PLAYER, TEAM_2V2, TOURNAMENT, PRIVATE_ROOM."
+        },
+        "status": {
+          "type": "string",
+          "description": "Room status: WAITING, PLAYING, COMPLETED."
+        },
+        "creatorId": {
+          "type": "string",
+          "description": "Auth UID of the room creator."
+        },
+        "playerUids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of player Auth UIDs in this match."
+        },
+        "currentTurnUid": {
+          "type": "string",
+          "description": "UID of the player whose turn it currently is."
+        },
+        "diceValue": {
+          "type": "integer",
+          "description": "Value of the rolled dice (1 to 6)."
+        },
+        "diceRolled": {
+          "type": "boolean",
+          "description": "Whether dice was rolled this turn."
+        },
+        "stateJson": {
+          "type": "string",
+          "description": "JSON representation of the board state and pawns."
+        },
+        "winnerUid": {
+          "type": "string",
+          "description": "UID of winning player."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        }
+      },
+      "required": ["id", "mode", "status", "creatorId", "playerUids", "createdAt", "updatedAt"]
+    },
+    "Tournament": {
+      "title": "Tournament",
+      "description": "Ludo competitive tournament listing.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Tournament ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Tournament title."
+        },
+        "entryFeeCoins": {
+          "type": "integer",
+          "description": "Coin fee required to join."
+        },
+        "prizeCoins": {
+          "type": "integer",
+          "description": "Prize pool coins."
+        },
+        "maxParticipants": {
+          "type": "integer",
+          "description": "Max player capacity."
+        },
+        "participants": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Joined player UIDs."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status: UPCOMING, ACTIVE, COMPLETED."
+        },
+        "winner": {
+          "type": "string",
+          "description": "Tournament champion UID or name."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Updated timestamp."
+        }
+      },
+      "required": ["id", "name", "entryFeeCoins", "prizeCoins", "status", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User account and persistent statistics."
+    },
+    "/game_rooms/{roomId}": {
+      "schema": "GameRoom",
+      "description": "Realtime multiplayer game rooms."
+    },
+    "/tournaments/{tournamentId}": {
+      "schema": "Tournament",
+      "description": "Tournaments available in the app."
+    }
+  }
+}
