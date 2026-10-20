@@ -5,9 +5,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -15,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.model.GameMode
 import com.example.model.UserAccount
+import com.example.ui.components.Clean3DLudoLogo
+import com.example.ui.components.Glossy3DButton
 import com.example.ui.components.TopPlayerHeader
 import com.example.ui.theme.*
 
@@ -39,24 +41,11 @@ fun HomeScreen(
     onAddCoinsClick: () -> Unit,
     onAddGemsClick: () -> Unit,
     onSelectMode: (GameMode) -> Unit,
-    onOpenTournament: () -> Unit,
-    onOpenPrivateLocal: () -> Unit,
-    onOpenVipRoom: () -> Unit,
+    onOpenComputerMode: () -> Unit,
+    onOpenPrivateRoom: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showPlayerCountModal by remember { mutableStateOf(false) }
-
-    // Subtle breathing animation for hero elements
-    val infiniteTransition = rememberInfiniteTransition(label = "hero_anim")
-    val heroDiceScale by infiniteTransition.animateFloat(
-        initialValue = 0.98f,
-        targetValue = 1.03f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1800, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "dice_float"
-    )
 
     Column(
         modifier = modifier
@@ -72,7 +61,7 @@ fun HomeScreen(
                 )
             )
     ) {
-        // Top Player Header (Avatar, Coins, Gems with + buttons)
+        // Top Player Header (Profile Avatar on the top-left, Coins, Gems with + buttons)
         TopPlayerHeader(
             userAccount = userAccount,
             onAvatarClick = onAvatarClick,
@@ -86,26 +75,31 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 14.dp, vertical = 6.dp),
+                .padding(horizontal = 14.dp, vertical = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Main Ludo Hero Section with 3D board, dice, crown, pawns
-            HeroLudoSection(
-                scale = heroDiceScale,
-                onHeroClick = { showPlayerCountModal = true }
-            )
+            // Section 2: Clean, professional 3D glowing "LUDO" logo area
+            Clean3DLudoLogo()
 
-            // Game Mode Cards Grid
-            // Row 1: "2&4 Players" (Orange) and "Team" (Purple)
+            // Section 6: Exactly 4 Game Mode Cards in 2x2 Grid:
+            // 1. "2&4 Players"
+            // 2. "Team"
+            // 3. "Computer"
+            // 4. "Private"
+
+            // Row 1: "2&4 Players" & "Team"
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // 2&4 Players Card
-                LargeModeCard(
+                // Card 1: 2&4 Players
+                Mode3DCard(
                     title = "2&4 Players",
-                    imageRes = R.drawable.img_card_players,
+                    subtitle = "Online Matchmaking",
+                    imageRes = R.drawable.img_card_players_3d,
+                    borderColor = Color(0xFFFF9100),
+                    depthColor = Color(0xFFBF360C),
                     gradientStart = CardPlayersGradientStart,
                     gradientEnd = CardPlayersGradientEnd,
                     modifier = Modifier.weight(1f),
@@ -113,10 +107,13 @@ fun HomeScreen(
                     onClick = { showPlayerCountModal = true }
                 )
 
-                // Team Card
-                LargeModeCard(
+                // Card 2: Team (2v2)
+                Mode3DCard(
                     title = "Team",
-                    imageRes = R.drawable.img_card_team,
+                    subtitle = "2v2 Team Battle",
+                    imageRes = R.drawable.img_card_team_3d,
+                    borderColor = Color(0xFF00B0FF),
+                    depthColor = Color(0xFF0D47A1),
                     gradientStart = CardTeamGradientStart,
                     gradientEnd = CardTeamGradientEnd,
                     modifier = Modifier.weight(1f),
@@ -125,57 +122,54 @@ fun HomeScreen(
                 )
             }
 
-            // Row 2: "Tournament", "Private&Local", "VIP Room"
+            // Row 2: "Computer" & "Private"
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Tournament Card
-                SmallModeCard(
-                    title = "Tournament",
-                    customVisual = {
-                        TournamentTrophyVisual()
-                    },
-                    gradientStart = CardTournamentGradientStart,
-                    gradientEnd = CardTournamentGradientEnd,
+                // Card 3: Computer (replaces Tournament, instant offline/local bot game)
+                Mode3DCard(
+                    title = "Computer",
+                    subtitle = "Instant vs AI",
+                    imageRes = R.drawable.img_card_computer_3d,
+                    borderColor = Color(0xFF00E676),
+                    depthColor = Color(0xFF1B5E20),
+                    gradientStart = Color(0xFF00C853),
+                    gradientEnd = Color(0xFF004D40),
                     modifier = Modifier.weight(1f),
-                    testTag = "card_tournament",
-                    onClick = onOpenTournament
+                    testTag = "card_computer",
+                    onClick = onOpenComputerMode
                 )
 
-                // Private & Local Card
-                SmallModeCard(
-                    title = "Private&Local",
-                    customVisual = {
-                        PrivateLocalVisual()
-                    },
+                // Card 4: Private (replaces VIP/Private with unified Private Room)
+                Mode3DCard(
+                    title = "Private",
+                    subtitle = "Room with Friends",
+                    imageRes = R.drawable.img_card_private_3d,
+                    borderColor = Color(0xFFFFD54F),
+                    depthColor = Color(0xFFE65100),
                     gradientStart = CardPrivateGradientStart,
                     gradientEnd = CardPrivateGradientEnd,
                     modifier = Modifier.weight(1f),
-                    testTag = "card_private_local",
-                    onClick = onOpenPrivateLocal
-                )
-
-                // VIP Room Card
-                SmallModeCard(
-                    title = "VIP Room",
-                    imageRes = R.drawable.img_card_vip,
-                    gradientStart = CardVipGradientStart,
-                    gradientEnd = CardVipGradientEnd,
-                    modifier = Modifier.weight(1f),
-                    testTag = "card_vip_room",
-                    onClick = onOpenVipRoom
+                    testTag = "card_private",
+                    onClick = onOpenPrivateRoom
                 )
             }
 
-            // Bottom 3D board close-up banner matching reference screenshot
-            BottomLudoBoardBanner()
+            Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Live Unity Ads Banner (Placement: BP_Banner_Android)
+            com.example.ui.components.UnityBannerAd(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp)
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
         }
     }
 
-    // Modal when user taps "2&4 Players"
+    // Modal when user taps "2&4 Players" - uses Polished 3D Button Style
     if (showPlayerCountModal) {
         PlayerCountSelectionModal(
             onSelect2Players = {
@@ -191,129 +185,62 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Premium 3D Game Mode Card with tactile depth, gloss frame, and vivid image artwork
+ */
 @Composable
-private fun HeroLudoSection(
-    scale: Float,
-    onHeroClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(230.dp)
-            .shadow(16.dp, RoundedCornerShape(22.dp), ambientColor = Color(0xFF00E676))
-            .clip(RoundedCornerShape(22.dp))
-            .border(2.dp, Brush.verticalGradient(listOf(Color(0xFFFFD54F), Color(0xFF00E676))), RoundedCornerShape(22.dp))
-            .clickable { onHeroClick() }
-            .testTag("hero_ludo_banner"),
-        contentAlignment = Alignment.Center
-    ) {
-        // Hero Image Background
-        Image(
-            painter = painterResource(id = R.drawable.img_ludo_hero),
-            contentDescription = "Ludo Board Hero",
-            modifier = Modifier
-                .fillMaxSize()
-                .scale(scale),
-            contentScale = ContentScale.Crop
-        )
-
-        // Gradient overlay for readability and 3D depth
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Black.copy(alpha = 0.25f),
-                            Color.Transparent,
-                            Color.Black.copy(alpha = 0.55f)
-                        )
-                    )
-                )
-        )
-
-        // 3D "LUDO" Title with Royal Crown on top
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Crown badge
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(
-                        Brush.radialGradient(
-                            listOf(Color(0xFFFFEE58), Color(0xFFFF8F00))
-                        ),
-                        CircleShape
-                    )
-                    .border(1.5.dp, Color(0xFFFFF9C4), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "👑", fontSize = 20.sp)
-            }
-
-            // Big 3D "LUDO" typography
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                LudoLetterTile("L", LudoRed)
-                LudoLetterTile("U", LudoYellow)
-                LudoLetterTile("D", LudoGreen)
-                LudoLetterTile("O", LudoBlue)
-            }
-        }
-    }
-}
-
-@Composable
-private fun LudoLetterTile(letter: String, color: Color) {
-    Box(
-        modifier = Modifier
-            .shadow(8.dp, RoundedCornerShape(8.dp), spotColor = Color.Black)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(color, color.copy(alpha = 0.8f))
-                ),
-                shape = RoundedCornerShape(8.dp)
-            )
-            .border(2.dp, Color.White, RoundedCornerShape(8.dp))
-            .padding(horizontal = 10.dp, vertical = 2.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = letter,
-            color = Color.White,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Black
-        )
-    }
-}
-
-@Composable
-private fun LargeModeCard(
+private fun Mode3DCard(
     title: String,
+    subtitle: String,
     imageRes: Int,
+    borderColor: Color,
+    depthColor: Color,
     gradientStart: Color,
     gradientEnd: Color,
     modifier: Modifier = Modifier,
-    testTag: String,
+    testTag: String = "mode_card",
     onClick: () -> Unit
 ) {
-    Card(
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val topPadding = if (isPressed) 4.dp else 0.dp
+    val bottomDepth = if (isPressed) 2.dp else 6.dp
+
+    Box(
         modifier = modifier
-            .height(175.dp)
-            .shadow(12.dp, RoundedCornerShape(20.dp), spotColor = gradientStart)
-            .border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-            .clickable { onClick() }
-            .testTag(testTag),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = gradientEnd)
+            .testTag(testTag)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick() }
+            .padding(top = topPadding)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        // 3D Bottom shadow slab
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .offset(y = bottomDepth)
+                .background(depthColor, RoundedCornerShape(20.dp))
+        )
+
+        // Card Container
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .shadow(12.dp, RoundedCornerShape(20.dp), spotColor = borderColor)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFF081C2D))
+                .border(
+                    width = 2.dp,
+                    brush = Brush.verticalGradient(
+                        listOf(Color.White.copy(alpha = 0.7f), borderColor)
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                )
+        ) {
+            // Artwork Image
             Image(
                 painter = painterResource(id = imageRes),
                 contentDescription = title,
@@ -321,18 +248,38 @@ private fun LargeModeCard(
                 contentScale = ContentScale.Crop
             )
 
-            // Glossy title banner at bottom
+            // Dark gradient overlay for typography readability
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
+                    .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f))
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.2f),
+                                Color.Transparent,
+                                Color(0xFF030D16).copy(alpha = 0.88f)
+                            )
                         )
                     )
-                    .padding(vertical = 10.dp, horizontal = 4.dp),
-                contentAlignment = Alignment.Center
+            )
+
+            // Top specular highlight line
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .height(4.dp)
+                    .align(Alignment.TopCenter)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color.White.copy(alpha = 0.4f))
+            )
+
+            // Title & Subtitle Badge at bottom
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = title,
@@ -341,157 +288,21 @@ private fun LargeModeCard(
                     fontSize = 17.sp,
                     textAlign = TextAlign.Center
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SmallModeCard(
-    title: String,
-    imageRes: Int? = null,
-    customVisual: (@Composable () -> Unit)? = null,
-    gradientStart: Color,
-    gradientEnd: Color,
-    modifier: Modifier = Modifier,
-    testTag: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier
-            .height(138.dp)
-            .shadow(10.dp, RoundedCornerShape(18.dp), spotColor = gradientStart)
-            .border(2.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(18.dp))
-            .clickable { onClick() }
-            .testTag(testTag),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = gradientEnd)
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (imageRes != null) {
-                Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = title,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else if (customVisual != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(listOf(gradientStart, gradientEnd))
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    customVisual()
-                }
-            }
-
-            // Title at bottom
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f))
-                        )
-                    )
-                    .padding(vertical = 6.dp, horizontal = 2.dp),
-                contentAlignment = Alignment.Center
-            ) {
                 Text(
-                    text = title,
-                    color = Color.White,
+                    text = subtitle,
+                    color = Color(0xFFFFD54F),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 11.5.sp,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1
+                    fontSize = 11.sp,
+                    textAlign = TextAlign.Center
                 )
             }
         }
     }
 }
 
-@Composable
-private fun TournamentTrophyVisual() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(bottom = 16.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(54.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(Color(0xFFFFEE58), Color(0xFFFF8F00))
-                    ),
-                    CircleShape
-                )
-                .border(2.dp, Color(0xFFFFF9C4), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "🏆", fontSize = 30.sp)
-        }
-    }
-}
-
-@Composable
-private fun PrivateLocalVisual() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(bottom = 16.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(54.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(Color(0xFF80D8FF), Color(0xFF0091EA))
-                    ),
-                    RoundedCornerShape(12.dp)
-                )
-                .border(2.dp, Color(0xFFE1F5FE), RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "📱", fontSize = 28.sp)
-        }
-    }
-}
-
-@Composable
-private fun BottomLudoBoardBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(130.dp)
-            .shadow(12.dp, RoundedCornerShape(18.dp))
-            .clip(RoundedCornerShape(18.dp))
-            .border(1.5.dp, Color(0xFF00E676).copy(alpha = 0.4f), RoundedCornerShape(18.dp))
-            .background(Color(0xFF071927))
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.img_ludo_hero),
-            contentDescription = "Ludo Board Close-up",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color(0xFF06111C).copy(alpha = 0.8f))
-                    )
-                )
-        )
-    }
-}
-
+/**
+ * 2 Players vs 4 Players Selection Modal using the polished 3D Button style
+ */
 @Composable
 private fun PlayerCountSelectionModal(
     onSelect2Players: () -> Unit,
@@ -501,66 +312,65 @@ private fun PlayerCountSelectionModal(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(
-                "Select Players Mode",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "SELECT MATCH FORMAT",
+                    color = Color(0xFFFFD54F),
+                    fontWeight = FontWeight.Black,
+                    fontSize = 18.sp,
+                    letterSpacing = 0.8.sp
+                )
+                Text(
+                    text = "Real-time Firebase online matchmaking",
+                    color = Color(0xFFB0BEC5),
+                    fontSize = 12.sp
+                )
+            }
         },
         text = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    "Choose an online matchmaking format:",
-                    color = Color(0xFFB0BEC5),
-                    fontSize = 13.sp
+                // 3D Button for 2 Players
+                Glossy3DButton(
+                    text = "2 PLAYERS (1v1) - 500 🪙",
+                    icon = "⚔️",
+                    onClick = onSelect2Players,
+                    gradientColors = listOf(Color(0xFFFF9100), Color(0xFFFF6D00), Color(0xFFE65100)),
+                    depthColor = Color(0xFFBF360C),
+                    fontSize = 14,
+                    testTag = "select_2_players_btn"
                 )
 
-                // 2 Players Option
-                Button(
-                    onClick = onSelect2Players,
-                    modifier = Modifier.fillMaxWidth().testTag("select_2_players_btn"),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("2 Players (1v1)", fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("Entry: 500 🪙", fontSize = 12.sp, color = Color(0xFFFFF9C4))
-                    }
-                }
-
-                // 4 Players Option
-                Button(
+                // 3D Button for 4 Players
+                Glossy3DButton(
+                    text = "4 PLAYERS (FREE-FOR-ALL) - 1,000 🪙",
+                    icon = "👑",
                     onClick = onSelect4Players,
-                    modifier = Modifier.fillMaxWidth().testTag("select_4_players_btn"),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853)),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("4 Players Free-for-All", fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("Entry: 1,000 🪙", fontSize = 12.sp, color = Color(0xFFFFF9C4))
-                    }
-                }
+                    gradientColors = listOf(Color(0xFF00E676), Color(0xFF00C853), Color(0xFF00796B)),
+                    depthColor = Color(0xFF004D40),
+                    fontSize = 14,
+                    testTag = "select_4_players_btn"
+                )
             }
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color(0xFF90A4AE))
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.testTag("dismiss_modal_btn")
+            ) {
+                Text("CANCEL", color = Color(0xFF90A4AE), fontWeight = FontWeight.Bold)
             }
         },
-        containerColor = Color(0xFF0C2438),
-        shape = RoundedCornerShape(20.dp)
+        containerColor = Color(0xFF0A2238),
+        shape = RoundedCornerShape(24.dp)
     )
 }

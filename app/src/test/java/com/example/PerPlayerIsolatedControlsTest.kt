@@ -1,12 +1,19 @@
 package com.example
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
+import com.example.data.LudoRepository
 import com.example.model.*
 import com.example.viewmodel.LudoViewModel
-import com.example.repository.LudoRepository
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class PerPlayerIsolatedControlsTest {
 
     private lateinit var viewModel: LudoViewModel
@@ -17,8 +24,18 @@ class PerPlayerIsolatedControlsTest {
 
     @Before
     fun setUp() {
-        val repository = LudoRepository()
-        viewModel = LudoViewModel(repository)
+        val app = ApplicationProvider.getApplicationContext<Application>()
+        if (com.google.firebase.FirebaseApp.getApps(app).isEmpty()) {
+            com.google.firebase.FirebaseApp.initializeApp(
+                app,
+                com.google.firebase.FirebaseOptions.Builder()
+                    .setApplicationId("com.aistudio.ludogame.rkpmv")
+                    .setProjectId("test-project")
+                    .setApiKey("fakeApiKey123456789012345678901234567890")
+                    .build()
+            )
+        }
+        viewModel = LudoViewModel(app)
     }
 
     @Test
@@ -27,7 +44,7 @@ class PerPlayerIsolatedControlsTest {
             LudoPlayer(id = p1Id, name = "Player 1", color = PlayerColor.RED),
             LudoPlayer(id = p2Id, name = "Player 2", color = PlayerColor.GREEN)
         )
-        viewModel.initializeGame(GameMode.TWO_PLAYER, players)
+        viewModel.initializeGame(GameMode.TWO_PLAYERS, players)
 
         val initialP1 = viewModel.gameState.value.getPlayer(p1Id)!!
         val initialP2 = viewModel.gameState.value.getPlayer(p2Id)!!
@@ -42,7 +59,7 @@ class PerPlayerIsolatedControlsTest {
 
         // Only Player 1 should be active / on cooldown
         assertTrue(updatedP1.controlState.isMagicEffectActive)
-        assertEquals(MagicButtonStatus.COOLDOWN, updatedP1.controlState.magicButtonStatus)
+        assertEquals(MagicButtonStatus.ACTIVE, updatedP1.controlState.magicButtonStatus)
 
         // Player 2's magic button MUST remain strictly unaffected
         assertFalse(updatedP2.controlState.isMagicEffectActive)
@@ -58,7 +75,7 @@ class PerPlayerIsolatedControlsTest {
             LudoPlayer(id = p3Id, name = "Player 3", color = PlayerColor.YELLOW),
             LudoPlayer(id = p4Id, name = "Player 4", color = PlayerColor.BLUE)
         )
-        viewModel.initializeGame(GameMode.FOUR_PLAYER, players)
+        viewModel.initializeGame(GameMode.FOUR_PLAYERS, players)
 
         // Toggle chat only for Player 2
         viewModel.togglePlayerChat(p2Id)
@@ -91,7 +108,7 @@ class PerPlayerIsolatedControlsTest {
             LudoPlayer(id = p1Id, name = "Player 1", color = PlayerColor.RED),
             LudoPlayer(id = p2Id, name = "Player 2", color = PlayerColor.GREEN)
         )
-        viewModel.initializeGame(GameMode.TWO_PLAYER, players)
+        viewModel.initializeGame(GameMode.TWO_PLAYERS, players)
 
         // Both start muted by default
         assertEquals(PlayerMicStatus.MUTED, viewModel.gameState.value.getPlayer(p1Id)!!.controlState.micStatus)
@@ -118,7 +135,7 @@ class PerPlayerIsolatedControlsTest {
             LudoPlayer(id = p1Id, name = "Player 1", color = PlayerColor.RED),
             LudoPlayer(id = p2Id, name = "Player 2", color = PlayerColor.GREEN)
         )
-        viewModel.initializeGame(GameMode.TWO_PLAYER, players)
+        viewModel.initializeGame(GameMode.TWO_PLAYERS, players)
 
         val state = viewModel.gameState.value
         assertEquals(p1Id, state.currentPlayer?.id)

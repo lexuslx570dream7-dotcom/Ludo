@@ -1,10 +1,10 @@
 package com.example
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,6 +12,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.model.GameMode
@@ -19,7 +22,6 @@ import com.example.model.LudoPlayer
 import com.example.model.PlayerColor
 import com.example.ui.components.BottomNavBar
 import com.example.ui.components.CoinGemDialog
-import com.example.ui.components.TopStatusBar
 import com.example.ui.screens.*
 import com.example.ui.theme.GameBgDeep
 import com.example.ui.theme.LudoGameTheme
@@ -36,7 +38,26 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        // Configure app so the phone's system status bar is always visible at the top,
+        // displaying time, battery percentage, and signal icons normally like a standard Android app.
+        // The app's content starts right below this status bar (not underneath/behind it).
+        window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.show(WindowInsetsCompat.Type.statusBars())
+        insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+        insetsController.isAppearanceLightStatusBars = false // Crisp light/white icons on dark status bar
+        insetsController.isAppearanceLightNavigationBars = false
+
+        // Solid status bar & navigation bar colors
+        window.statusBarColor = android.graphics.Color.parseColor("#03101E")
+        window.navigationBarColor = android.graphics.Color.parseColor("#03101E")
+
+        // Initialize Unity Ads backend in live production mode (Game ID: 800404254)
+        com.example.ads.UnityAdsManager.initialize(this)
+
         setContent {
             LudoGameTheme {
                 AppRootContent(viewModel = viewModel)
@@ -134,13 +155,10 @@ fun MainAppContent(
             .fillMaxSize()
             .background(GameBgDeep),
         containerColor = GameBgDeep,
-        topBar = {
-            // Realistic Android Status Bar matching screenshot
-            TopStatusBar()
-        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            // Show bottom navigation bar on primary tabs
-            if (currentScreen in listOf(AppScreen.HOME, AppScreen.SOCIAL, AppScreen.PROFILE)) {
+            // Show bottom navigation bar on primary tabs: Home, Rewards, Social
+            if (currentScreen in listOf(AppScreen.HOME, AppScreen.REWARDS, AppScreen.SOCIAL)) {
                 BottomNavBar(
                     currentScreen = currentScreen,
                     onTabSelected = { tab -> viewModel.navigateTo(tab) }
@@ -161,9 +179,15 @@ fun MainAppContent(
                         onAddCoinsClick = { viewModel.openStore(StoreType.COINS) },
                         onAddGemsClick = { viewModel.openStore(StoreType.GEMS) },
                         onSelectMode = { mode -> viewModel.startMatchmaking(mode) },
-                        onOpenTournament = { viewModel.navigateTo(AppScreen.TOURNAMENTS) },
-                        onOpenPrivateLocal = { viewModel.navigateTo(AppScreen.PRIVATE_ROOM) },
-                        onOpenVipRoom = { viewModel.navigateTo(AppScreen.VIP_ROOM) }
+                        onOpenComputerMode = { viewModel.startComputerMatch() },
+                        onOpenPrivateRoom = { viewModel.navigateTo(AppScreen.PRIVATE_ROOM) }
+                    )
+                }
+
+                AppScreen.REWARDS -> {
+                    com.example.ui.screens.RewardsScreen(
+                        userAccount = userAccount,
+                        onCreditCoins = { amount -> viewModel.claimRewardedAdCoins(amount) }
                     )
                 }
 
@@ -224,6 +248,10 @@ fun MainAppContent(
                     GameScreen(
                         gameState = gameState,
                         localUserId = viewModel.repository.userAccount.value.userId,
+                        soundEnabled = userAccount.soundEnabled,
+                        coinBalance = userAccount.coins,
+                        gemBalance = userAccount.gems,
+                        spectatorCount = 0,
                         onRollDice = { viewModel.rollDice() },
                         onPawnClick = { pawnId -> viewModel.movePawn(pawnId) },
                         onActivateMagic = { playerId -> viewModel.activatePlayerMagic(playerId) },
@@ -231,6 +259,9 @@ fun MainAppContent(
                         onSendChatMessage = { playerId, text, emoji -> viewModel.sendPlayerChatMessage(playerId, text, emoji) },
                         onTogglePlayerMic = { playerId -> viewModel.togglePlayerMic(playerId) },
                         onToggleMic = { viewModel.toggleInGameMic() },
+                        onToggleSound = { viewModel.toggleSound() },
+                        onSubmitFeedback = { text -> viewModel.submitFeedback(text) },
+                        onSendGift = { targetId, giftName, giftEmoji, cost -> viewModel.sendGift(targetId, giftName, giftEmoji, cost) },
                         onLeaveGame = { viewModel.leaveGame() }
                     )
                 }

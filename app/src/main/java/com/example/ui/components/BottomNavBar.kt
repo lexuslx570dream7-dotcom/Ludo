@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.viewmodel.AppScreen
 
+/**
+ * 3-Tab Bottom Navigation Bar:
+ * 1. Home
+ * 2. Rewards
+ * 3. Social
+ * (Profile moved to Top Bar next to currency)
+ */
 @Composable
 fun BottomNavBar(
     currentScreen: AppScreen,
@@ -34,7 +41,7 @@ fun BottomNavBar(
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(horizontal = 20.dp, vertical = 6.dp)
             .shadow(16.dp, RoundedCornerShape(28.dp), ambientColor = Color(0xFF00E676), spotColor = Color(0xFF00E676))
             .background(
                 brush = Brush.verticalGradient(
@@ -63,7 +70,7 @@ fun BottomNavBar(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Home Tab
+            // 1. Home Tab
             NavTabItem(
                 title = "Home",
                 isSelected = currentScreen == AppScreen.HOME,
@@ -101,7 +108,45 @@ fun BottomNavBar(
                 onClick = { onTabSelected(AppScreen.HOME) }
             )
 
-            // Social Tab
+            // 2. Rewards Tab (New)
+            NavTabItem(
+                title = "Rewards",
+                isSelected = currentScreen == AppScreen.REWARDS,
+                testTag = "nav_rewards",
+                icon = { isSelected ->
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(Color(0xFFFFD54F), Color(0xFFFF8F00))
+                                    ),
+                                    CircleShape
+                                )
+                                .border(1.5.dp, Color(0xFFFFF9C4), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CardGiftcard,
+                                contentDescription = "Rewards",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.CardGiftcard,
+                            contentDescription = "Rewards",
+                            tint = Color(0xFFFFD54F).copy(alpha = 0.8f),
+                            modifier = Modifier.size(26.dp)
+                        )
+                    }
+                },
+                onClick = { onTabSelected(AppScreen.REWARDS) }
+            )
+
+            // 3. Social Tab
             NavTabItem(
                 title = "Social",
                 isSelected = currentScreen == AppScreen.SOCIAL,
@@ -138,44 +183,6 @@ fun BottomNavBar(
                 },
                 onClick = { onTabSelected(AppScreen.SOCIAL) }
             )
-
-            // Profile Tab
-            NavTabItem(
-                title = "Profile",
-                isSelected = currentScreen == AppScreen.PROFILE,
-                testTag = "nav_profile",
-                icon = { isSelected ->
-                    if (isSelected) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(
-                                    Brush.radialGradient(
-                                        colors = listOf(Color(0xFF00E676), Color(0xFF00C853))
-                                    ),
-                                    CircleShape
-                                )
-                                .border(1.5.dp, Color(0xFFB9F6CA), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Profile",
-                                tint = Color.White,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Profile",
-                            tint = Color(0xFF80CBC4),
-                            modifier = Modifier.size(26.dp)
-                        )
-                    }
-                },
-                onClick = { onTabSelected(AppScreen.PROFILE) }
-            )
         }
     }
 }
@@ -207,7 +214,7 @@ private fun NavTabItem(
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
         )
 
-        // Green indicator underline when selected
+        // Indicator underline when selected
         if (isSelected) {
             Spacer(modifier = Modifier.height(2.dp))
             Box(

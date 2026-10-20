@@ -168,43 +168,11 @@ private fun CurrencyPill(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // Icon (Coin or Gem)
+        // 3D Icon (Coin or Gem)
         if (isCoin) {
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(Color(0xFFFFEE58), Color(0xFFFF8F00))
-                        ),
-                        CircleShape
-                    )
-                    .border(1.dp, Color(0xFFFFF9C4), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "🪙",
-                    fontSize = 13.sp
-                )
-            }
+            IconCoin3D(size = 24.dp)
         } else {
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(Color(0xFF80D8FF), Color(0xFF0091EA))
-                        ),
-                        RoundedCornerShape(6.dp)
-                    )
-                    .border(1.dp, Color(0xFFE1F5FE), RoundedCornerShape(6.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "💎",
-                    fontSize = 13.sp
-                )
-            }
+            IconGem3D(size = 24.dp)
         }
 
         // Amount text

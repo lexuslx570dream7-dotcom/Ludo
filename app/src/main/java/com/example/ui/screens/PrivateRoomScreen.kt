@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.example.model.GameMode
 import com.example.model.LudoPlayer
 import com.example.model.PlayerColor
+import com.example.ui.components.Glossy3DButton
 import com.example.ui.theme.GameBgDeep
 import com.example.ui.theme.GameBgSurface
 
@@ -186,20 +187,16 @@ fun PrivateRoomScreen(
                     }
                 }
 
-                Button(
+                Glossy3DButton(
+                    text = if (players.size >= 2) "START MATCH" else "NEED AT LEAST 2 PLAYERS",
+                    icon = "⚔️",
                     onClick = onStartGame,
                     enabled = players.size >= 2,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853)),
-                    modifier = Modifier.fillMaxWidth().testTag("start_private_room_game_btn"),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = if (players.size >= 2) "START MATCH" else "NEED AT LEAST 2 PLAYERS",
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 15.sp
-                    )
-                }
+                    gradientColors = if (players.size >= 2) listOf(Color(0xFF00E676), Color(0xFF00C853), Color(0xFF00796B)) else listOf(Color(0xFF546E7A), Color(0xFF37474F)),
+                    depthColor = if (players.size >= 2) Color(0xFF004D40) else Color(0xFF263238),
+                    fontSize = 15,
+                    testTag = "start_private_room_game_btn"
+                )
 
                 HorizontalDivider(color = Color(0xFF1E3A52), modifier = Modifier.padding(vertical = 8.dp))
 
@@ -231,13 +228,15 @@ fun PrivateRoomScreen(
                         )
                     )
 
-                    Button(
+                    Glossy3DButton(
+                        text = "JOIN",
                         onClick = onStartGame,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00B0FF)),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("JOIN", fontWeight = FontWeight.Bold, color = Color.White)
-                    }
+                        gradientColors = listOf(Color(0xFF00B0FF), Color(0xFF0288D1), Color(0xFF01579B)),
+                        depthColor = Color(0xFF0D47A1),
+                        fontSize = 13,
+                        modifier = Modifier.width(90.dp),
+                        testTag = "join_private_room_btn"
+                    )
                 }
             }
 

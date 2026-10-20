@@ -77,6 +77,7 @@ data class LudoPlayer(
     val isBot: Boolean = false,
     val rank: Int? = null,
     val level: Int = 12,
+    val team: String? = null,
     val controlState: PlayerControlState = PlayerControlState(playerId = id)
 ) {
     val isMuted: Boolean get() = controlState.micStatus == PlayerMicStatus.MUTED
@@ -89,6 +90,7 @@ enum class GameMode(val title: String, val entryFee: Long, val prizePool: Long) 
     TWO_PLAYERS("2 Players Online", 500L, 950L),
     FOUR_PLAYERS("4 Players Match", 1000L, 3800L),
     TEAM_2V2("2v2 Team Battle", 1500L, 5700L),
+    VS_COMPUTER("Play vs Computer", 0L, 250L),
     TOURNAMENT("Championship", 2000L, 10000L),
     PRIVATE_ROOM("Private Room", 500L, 1900L),
     LOCAL_PASS_AND_PLAY("Pass & Play", 0L, 0L),

@@ -3,6 +3,7 @@ package com.example.ui.screens
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,8 +32,6 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import com.example.R
-import com.example.ui.theme.GameBgDeep
-import com.example.ui.theme.GameBgSurface
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -68,79 +67,46 @@ fun SignInScreen(
         )
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(GameBgDeep, GameBgSurface, Color(0xFF030D18))
-                )
-            )
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
+    Box(
+        modifier = modifier.fillMaxSize()
     ) {
-        Spacer(modifier = Modifier.height(20.dp))
+        // Uploaded background image kept exactly as is
+        Image(
+            painter = painterResource(id = R.drawable.login_bg),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
-        // Hero Art & Title
+        // Main Login Content: Clean, minimal layout positioned according to the design specification
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier
-                    .size(160.dp)
-                    .shadow(20.dp, CircleShape, spotColor = Color(0xFFFFD54F))
-                    .clip(CircleShape)
-                    .border(3.dp, Color(0xFFFFD54F), CircleShape)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.img_ludo_icon),
-                    contentDescription = "Ludo Club Logo",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
+            // Spacer to position the logo precisely in the upper-middle area
+            Spacer(modifier = Modifier.weight(0.75f))
 
-            Text(
-                text = "👑 LUDO CLUB 👑",
-                color = Color(0xFFFFD54F),
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 2.sp
-            )
+            // Upper middle area: Circular Ludo game logo with four colored quadrants,
+            // golden crown in the center, and bold colorful letters below it spelling 'Ludo Club'.
+            // No tagline or subtext below the logo.
+            CircularLudoGameLogo()
 
-            Text(
-                text = "Real-Time 3D Multiplayer Board Game",
-                color = Color(0xFF00E676),
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
-            )
+            // Below that, in the empty space
+            Spacer(modifier = Modifier.weight(1.0f))
 
-            Text(
-                text = "Sign in to synchronize your profile, coins, ranks, and live game rooms with the cloud database.",
-                color = Color(0xFFB0BEC5),
-                fontSize = 13.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
-
-        // Action Section with Google Sign-In Button
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
             if (errorMessage != null) {
                 Text(
                     text = errorMessage ?: "",
-                    color = Color(0xFFFF5252),
+                    color = Color(0xFFD32F2F),
                     fontSize = 12.sp,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
 
+            // White pill-shaped button with official Google 'G' logo on the left and bold black text 'Continue with Google'
             Button(
                 onClick = {
                     isLoading = true
@@ -165,19 +131,27 @@ fun SignInScreen(
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.White,
-                    disabledContainerColor = Color(0xFFB0BEC5)
+                    disabledContainerColor = Color(0xFFFAFAFA)
                 ),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(50),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 6.dp,
+                    pressedElevation = 2.dp,
+                    disabledElevation = 0.dp
+                ),
+                border = BorderStroke(1.dp, Color(0xFFE0E0E0)),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .shadow(8.dp, RoundedCornerShape(24.dp))
+                    .fillMaxWidth(0.85f)
+                    .widthIn(max = 340.dp)
+                    .height(54.dp)
+                    .shadow(8.dp, RoundedCornerShape(50), spotColor = Color(0x33000000))
                     .testTag("google_sign_in_button")
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = Color(0xFF00C853),
+                        modifier = Modifier.size(22.dp),
+                        color = Color(0xFF4285F4),
                         strokeWidth = 2.5.dp
                     )
                 } else {
@@ -185,29 +159,221 @@ fun SignInScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = "🔴 🟡 🟢 🔵 ",
-                            fontSize = 13.sp
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_google_logo),
+                            contentDescription = "Google Logo",
+                            modifier = Modifier.size(22.dp)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Sign in with Google",
-                            color = Color(0xFF1F1F1F),
-                            fontSize = 15.sp,
+                            text = "Continue with Google",
+                            color = Color.Black,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
             }
 
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Directly below the button: small gray text showing only 'Terms and Conditions' and 'Privacy Policy'
             Text(
-                text = "Secure Google Authentication • Instant Cloud Sync",
-                color = Color(0xFF78909C),
-                fontSize = 11.sp
+                text = "Terms and Conditions  •  Privacy Policy",
+                color = Color(0xFF757575),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
             )
+
+            // Bottom spacing keeping it gracefully balanced above the bottom pawns and dice
+            Spacer(modifier = Modifier.weight(0.45f))
+        }
+    }
+}
+
+/**
+ * Circular Ludo game logo with four colored quadrants, a golden crown in the center,
+ * and bold colorful letters below it spelling 'Ludo Club'.
+ */
+@Composable
+fun CircularLudoGameLogo(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+        modifier = modifier
+    ) {
+        // Circular Ludo Board with 4 colored quadrants and central golden crown
+        Box(
+            modifier = Modifier
+                .size(136.dp)
+                .shadow(16.dp, CircleShape, spotColor = Color(0x55000000))
+                .clip(CircleShape)
+                .background(Color.White)
+                .border(
+                    width = 4.dp,
+                    brush = Brush.sweepGradient(
+                        colors = listOf(
+                            Color(0xFFFFD54F),
+                            Color(0xFFFFB300),
+                            Color(0xFFFFF9C4),
+                            Color(0xFFFF8F00),
+                            Color(0xFFFFD54F)
+                        )
+                    ),
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            // 4 Quadrants
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(modifier = Modifier.weight(1f)) {
+                    // Top-Left: Red
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(Color(0xFFE53935)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LudoQuadrantCell(pawnColor = Color(0xFFE53935))
+                    }
+                    // Vertical divider
+                    Box(modifier = Modifier.width(2.5.dp).fillMaxHeight().background(Color.White))
+                    // Top-Right: Green
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(Color(0xFF2E7D32)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LudoQuadrantCell(pawnColor = Color(0xFF2E7D32))
+                    }
+                }
+                // Horizontal divider
+                Box(modifier = Modifier.fillMaxWidth().height(2.5.dp).background(Color.White))
+                Row(modifier = Modifier.weight(1f)) {
+                    // Bottom-Left: Blue
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(Color(0xFF1565C0)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LudoQuadrantCell(pawnColor = Color(0xFF1565C0))
+                    }
+                    // Vertical divider
+                    Box(modifier = Modifier.width(2.5.dp).fillMaxHeight().background(Color.White))
+                    // Bottom-Right: Yellow
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(Color(0xFFFBC02D)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        LudoQuadrantCell(pawnColor = Color(0xFFFBC02D))
+                    }
+                }
+            }
+
+            // Central golden crown base
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .shadow(8.dp, CircleShape)
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0xFFFFFDE7), Color(0xFFFFECB3), Color(0xFFFFD54F))
+                        )
+                    )
+                    .border(2.dp, Color(0xFFFF8F00), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "👑",
+                    fontSize = 24.sp
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Bold colorful letters below it spelling 'Ludo Club'
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // L - u - d - o
+            LetterCircleBadge(char = "L", color = Color(0xFF0288D1))
+            LetterCircleBadge(char = "u", color = Color(0xFFE53935))
+            LetterCircleBadge(char = "d", color = Color(0xFF2E7D32))
+            LetterCircleBadge(char = "o", color = Color(0xFFF9A825))
+
+            Spacer(modifier = Modifier.width(6.dp))
+
+            // C - l - u - b
+            LetterCircleBadge(char = "C", color = Color(0xFFE53935))
+            LetterCircleBadge(char = "l", color = Color(0xFF0288D1))
+            LetterCircleBadge(char = "u", color = Color(0xFF2E7D32))
+            LetterCircleBadge(char = "b", color = Color(0xFFF9A825))
+        }
+    }
+}
+
+@Composable
+private fun LudoQuadrantCell(pawnColor: Color) {
+    Box(
+        modifier = Modifier
+            .size(38.dp)
+            .shadow(2.dp, RoundedCornerShape(6.dp))
+            .background(Color.White, RoundedCornerShape(6.dp))
+            .padding(4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(modifier = Modifier.size(9.dp).background(pawnColor, CircleShape))
+                Box(modifier = Modifier.size(9.dp).background(pawnColor, CircleShape))
+            }
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(modifier = Modifier.size(9.dp).background(pawnColor, CircleShape))
+                Box(modifier = Modifier.size(9.dp).background(pawnColor, CircleShape))
+            }
+        }
+    }
+}
+
+@Composable
+private fun LetterCircleBadge(char: String, color: Color) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .shadow(4.dp, CircleShape, spotColor = Color(0x35000000))
+            .background(Color.White, CircleShape)
+            .border(1.5.dp, color.copy(alpha = 0.85f), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = char,
+            color = color,
+            fontWeight = FontWeight.Black,
+            fontSize = 17.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

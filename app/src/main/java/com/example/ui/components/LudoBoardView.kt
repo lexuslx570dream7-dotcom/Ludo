@@ -120,50 +120,13 @@ fun Pawn3DPiece(
     isSelectable: Boolean,
     size: androidx.compose.ui.unit.Dp
 ) {
-    val pieceColor = when (color) {
-        PlayerColor.RED -> LudoRed
-        PlayerColor.GREEN -> LudoGreen
-        PlayerColor.YELLOW -> LudoYellow
-        PlayerColor.BLUE -> LudoBlue
-    }
-
-    val shadowColor = when (color) {
-        PlayerColor.RED -> LudoRedDark
-        PlayerColor.GREEN -> LudoGreenDark
-        PlayerColor.YELLOW -> LudoYellowDark
-        PlayerColor.BLUE -> LudoBlueDark
-    }
-
-    Box(
-        modifier = Modifier
-            .size(size)
-            .shadow(if (isSelectable) 8.dp else 4.dp, CircleShape, spotColor = if (isSelectable) Color(0xFFFFD54F) else Color.Black)
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color.White.copy(alpha = 0.8f), pieceColor, shadowColor)
-                ),
-                shape = CircleShape
-            )
-            .border(
-                width = if (isSelectable) 2.5.dp else 1.2.dp,
-                color = if (isSelectable) Color(0xFFFFEB3B) else Color.White.copy(alpha = 0.9f),
-                shape = CircleShape
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        // Inner 3D specular highlight sphere
-        Box(
-            modifier = Modifier
-                .size(size * 0.45f)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(Color.White, pieceColor)
-                    ),
-                    shape = CircleShape
-                )
-        )
-    }
+    GlossyPawn3D(
+        color = color,
+        isSelectable = isSelectable,
+        size = size
+    )
 }
+
 
 // 15x15 standard Ludo track grid coordinate mapper
 fun calculatePawnGridCoordinate(color: PlayerColor, pawn: Pawn): Pair<Float, Float>? {
@@ -173,12 +136,12 @@ fun calculatePawnGridCoordinate(color: PlayerColor, pawn: Pawn): Pair<Float, Flo
     }
 
     if (pawn.isInBase) {
-        // In the 4 home base quadrants
+        // In the 4 home base quadrants matching screenshot (Yellow top-left, Blue top-right, Green bottom-left, Red bottom-right)
         val baseCoords = when (color) {
-            PlayerColor.RED -> listOf(Pair(1.5f, 1.5f), Pair(3.5f, 1.5f), Pair(1.5f, 3.5f), Pair(3.5f, 3.5f))
-            PlayerColor.GREEN -> listOf(Pair(10.5f, 1.5f), Pair(12.5f, 1.5f), Pair(10.5f, 3.5f), Pair(12.5f, 3.5f))
-            PlayerColor.YELLOW -> listOf(Pair(10.5f, 10.5f), Pair(12.5f, 10.5f), Pair(10.5f, 12.5f), Pair(12.5f, 12.5f))
-            PlayerColor.BLUE -> listOf(Pair(1.5f, 10.5f), Pair(3.5f, 10.5f), Pair(1.5f, 12.5f), Pair(3.5f, 12.5f))
+            PlayerColor.YELLOW -> listOf(Pair(1.8f, 1.8f), Pair(3.8f, 1.8f), Pair(1.8f, 3.8f), Pair(3.8f, 3.8f))
+            PlayerColor.BLUE -> listOf(Pair(10.8f, 1.8f), Pair(12.8f, 1.8f), Pair(10.8f, 3.8f), Pair(12.8f, 3.8f))
+            PlayerColor.GREEN -> listOf(Pair(1.8f, 10.8f), Pair(3.8f, 10.8f), Pair(1.8f, 12.8f), Pair(3.8f, 12.8f))
+            PlayerColor.RED -> listOf(Pair(10.8f, 10.8f), Pair(12.8f, 10.8f), Pair(10.8f, 12.8f), Pair(12.8f, 12.8f))
         }
         return baseCoords.getOrNull(pawn.id.coerceIn(0, 3))
     }
@@ -187,10 +150,10 @@ fun calculatePawnGridCoordinate(color: PlayerColor, pawn: Pawn): Pair<Float, Flo
     if (pawn.isInHomePath) {
         val dist = pawn.step - 50 // 1..5
         return when (color) {
-            PlayerColor.RED -> Pair(dist.toFloat(), 7f)
-            PlayerColor.GREEN -> Pair(7f, dist.toFloat())
-            PlayerColor.YELLOW -> Pair((14 - dist).toFloat(), 7f)
-            PlayerColor.BLUE -> Pair(7f, (14 - dist).toFloat())
+            PlayerColor.YELLOW -> Pair(dist.toFloat(), 7f)
+            PlayerColor.BLUE -> Pair(7f, dist.toFloat())
+            PlayerColor.RED -> Pair((14 - dist).toFloat(), 7f)
+            PlayerColor.GREEN -> Pair(7f, (14 - dist).toFloat())
         }
     }
 
@@ -201,50 +164,54 @@ fun calculatePawnGridCoordinate(color: PlayerColor, pawn: Pawn): Pair<Float, Flo
 
 // Precalculated standard 52 outer track grid tiles (0..51)
 val TRACK_COORDINATES: List<Pair<Float, Float>> = listOf(
-    // RED circuit start
+    // Circuit start
     Pair(1f, 6f), Pair(2f, 6f), Pair(3f, 6f), Pair(4f, 6f), Pair(5f, 6f), // 0..4
     Pair(6f, 5f), Pair(6f, 4f), Pair(6f, 3f), Pair(6f, 2f), Pair(6f, 1f), Pair(6f, 0f), // 5..10
     Pair(7f, 0f), // 11
-    Pair(8f, 0f), Pair(8f, 1f), Pair(8f, 2f), Pair(8f, 3f), Pair(8f, 4f), Pair(8f, 5f), // 12..17 (13 is Green start)
+    Pair(8f, 0f), Pair(8f, 1f), Pair(8f, 2f), Pair(8f, 3f), Pair(8f, 4f), Pair(8f, 5f), // 12..17
     Pair(9f, 6f), Pair(10f, 6f), Pair(11f, 6f), Pair(12f, 6f), Pair(13f, 6f), Pair(14f, 6f), // 18..23
     Pair(14f, 7f), // 24
-    Pair(14f, 8f), Pair(13f, 8f), Pair(12f, 8f), Pair(11f, 8f), Pair(10f, 8f), Pair(9f, 8f), // 25..30 (26 is Yellow start)
+    Pair(14f, 8f), Pair(13f, 8f), Pair(12f, 8f), Pair(11f, 8f), Pair(10f, 8f), Pair(9f, 8f), // 25..30
     Pair(8f, 9f), Pair(8f, 10f), Pair(8f, 11f), Pair(8f, 12f), Pair(8f, 13f), Pair(8f, 14f), // 31..36
     Pair(7f, 14f), // 37
-    Pair(6f, 14f), Pair(6f, 13f), Pair(6f, 12f), Pair(6f, 11f), Pair(6f, 10f), Pair(6f, 9f), // 38..43 (39 is Blue start)
+    Pair(6f, 14f), Pair(6f, 13f), Pair(6f, 12f), Pair(6f, 11f), Pair(6f, 10f), Pair(6f, 9f), // 38..43
     Pair(5f, 8f), Pair(4f, 8f), Pair(3f, 8f), Pair(2f, 8f), Pair(1f, 8f), Pair(0f, 8f), // 44..49
     Pair(0f, 7f), Pair(0f, 6f) // 50..51
 )
 
 fun DrawScope.drawLudoBaseAndTracks(cellSize: Float) {
-    val redColor = Color(0xFFFF2A4B)
-    val greenColor = Color(0xFF00C853)
-    val yellowColor = Color(0xFFFFD600)
-    val blueColor = Color(0xFF00B0FF)
-    val borderCol = Color(0xFF37474F)
+    val yellowColor = Color(0xFFE5A100)
+    val blueColor = Color(0xFF1E88E5)
+    val greenColor = Color(0xFF2E7D32)
+    val redColor = Color(0xFFE53935)
+    val borderCol = Color(0xFF455A64)
 
-    // 1. Draw 4 Home Base Quadrants (6x6 cells each)
-    // Red Base (Top Left)
-    drawRect(redColor, Offset(0f, 0f), Size(cellSize * 6, cellSize * 6))
-    drawRect(Color.White, Offset(cellSize * 1, cellSize * 1), Size(cellSize * 4, cellSize * 4))
+    // 1. Draw 4 Home Base Quadrants matching screenshot
+    // Yellow Base (Top Left)
+    drawRect(yellowColor, Offset(0f, 0f), Size(cellSize * 6, cellSize * 6))
+    drawCircle(Color(0xFFFFF9C4), cellSize * 2.3f, Offset(cellSize * 3f, cellSize * 3f))
+    drawCircle(yellowColor, cellSize * 2.05f, Offset(cellSize * 3f, cellSize * 3f))
 
-    // Green Base (Top Right)
-    drawRect(greenColor, Offset(cellSize * 9, 0f), Size(cellSize * 6, cellSize * 6))
-    drawRect(Color.White, Offset(cellSize * 10, cellSize * 1), Size(cellSize * 4, cellSize * 4))
+    // Blue Base (Top Right)
+    drawRect(blueColor, Offset(cellSize * 9, 0f), Size(cellSize * 6, cellSize * 6))
+    drawCircle(Color(0xFFBBDEFB), cellSize * 2.3f, Offset(cellSize * 12f, cellSize * 3f))
+    drawCircle(blueColor, cellSize * 2.05f, Offset(cellSize * 12f, cellSize * 3f))
 
-    // Yellow Base (Bottom Right)
-    drawRect(yellowColor, Offset(cellSize * 9, cellSize * 9), Size(cellSize * 6, cellSize * 6))
-    drawRect(Color.White, Offset(cellSize * 10, cellSize * 10), Size(cellSize * 4, cellSize * 4))
+    // Green Base (Bottom Left)
+    drawRect(greenColor, Offset(0f, cellSize * 9), Size(cellSize * 6, cellSize * 6))
+    drawCircle(Color(0xFFC8E6C9), cellSize * 2.3f, Offset(cellSize * 3f, cellSize * 12f))
+    drawCircle(greenColor, cellSize * 2.05f, Offset(cellSize * 3f, cellSize * 12f))
 
-    // Blue Base (Bottom Left)
-    drawRect(blueColor, Offset(0f, cellSize * 9), Size(cellSize * 6, cellSize * 6))
-    drawRect(Color.White, Offset(cellSize * 1, cellSize * 10), Size(cellSize * 4, cellSize * 4))
+    // Red Base (Bottom Right)
+    drawRect(redColor, Offset(cellSize * 9, cellSize * 9), Size(cellSize * 6, cellSize * 6))
+    drawCircle(Color(0xFFFFCDD2), cellSize * 2.3f, Offset(cellSize * 12f, cellSize * 12f))
+    drawCircle(redColor, cellSize * 2.05f, Offset(cellSize * 12f, cellSize * 12f))
 
     // Base pawn spots circles
-    drawBasePawnHoles(cellSize, 1f, 1f, redColor)
-    drawBasePawnHoles(cellSize, 10f, 1f, greenColor)
-    drawBasePawnHoles(cellSize, 10f, 10f, yellowColor)
-    drawBasePawnHoles(cellSize, 1f, 10f, blueColor)
+    drawBasePawnHoles(cellSize, 1f, 1f, Color.White)
+    drawBasePawnHoles(cellSize, 10f, 1f, Color.White)
+    drawBasePawnHoles(cellSize, 1f, 10f, Color.White)
+    drawBasePawnHoles(cellSize, 10f, 10f, Color.White)
 
     // 2. Draw Track Grid lines
     for (x in 0..15) {
@@ -256,61 +223,72 @@ fun DrawScope.drawLudoBaseAndTracks(cellSize: Float) {
 
     // 3. Draw Colored Home Runways
     for (step in 1..5) {
-        drawRect(redColor, Offset(step * cellSize, 7 * cellSize), Size(cellSize, cellSize))
-        drawRect(greenColor, Offset(7 * cellSize, step * cellSize), Size(cellSize, cellSize))
-        drawRect(yellowColor, Offset((14 - step) * cellSize, 7 * cellSize), Size(cellSize, cellSize))
-        drawRect(blueColor, Offset(7 * cellSize, (14 - step) * cellSize), Size(cellSize, cellSize))
+        drawRect(yellowColor, Offset(step * cellSize, 7 * cellSize), Size(cellSize, cellSize))
+        drawRect(blueColor, Offset(7 * cellSize, step * cellSize), Size(cellSize, cellSize))
+        drawRect(redColor, Offset((14 - step) * cellSize, 7 * cellSize), Size(cellSize, cellSize))
+        drawRect(greenColor, Offset(7 * cellSize, (14 - step) * cellSize), Size(cellSize, cellSize))
     }
 
     // Colored starting tiles
-    drawRect(redColor, Offset(1 * cellSize, 6 * cellSize), Size(cellSize, cellSize))
-    drawRect(greenColor, Offset(8 * cellSize, 1 * cellSize), Size(cellSize, cellSize))
-    drawRect(yellowColor, Offset(13 * cellSize, 8 * cellSize), Size(cellSize, cellSize))
-    drawRect(blueColor, Offset(6 * cellSize, 13 * cellSize), Size(cellSize, cellSize))
+    drawRect(yellowColor, Offset(1 * cellSize, 6 * cellSize), Size(cellSize, cellSize))
+    drawRect(blueColor, Offset(8 * cellSize, 1 * cellSize), Size(cellSize, cellSize))
+    drawRect(redColor, Offset(13 * cellSize, 8 * cellSize), Size(cellSize, cellSize))
+    drawRect(greenColor, Offset(6 * cellSize, 13 * cellSize), Size(cellSize, cellSize))
 
-    // 4. Center Home Triangle (3x3 cells in the center)
+    // Safe star tiles with gray stars
+    drawSafeStar(cellSize, 2f, 8f)
+    drawSafeStar(cellSize, 6f, 2f)
+    drawSafeStar(cellSize, 12f, 6f)
+    drawSafeStar(cellSize, 8f, 12f)
+
+    // 4. Center Home Triangles (3x3 cells in the center)
     val centerTopLeft = Offset(6 * cellSize, 6 * cellSize)
     val centerMid = Offset(7.5f * cellSize, 7.5f * cellSize)
 
-    // Red Triangle (Left)
-    val redPath = Path().apply {
+    // Yellow Triangle (Left)
+    val yellowPath = Path().apply {
         moveTo(centerTopLeft.x, centerTopLeft.y)
         lineTo(centerMid.x, centerMid.y)
         lineTo(centerTopLeft.x, centerTopLeft.y + 3 * cellSize)
         close()
     }
-    drawPath(redPath, redColor)
+    drawPath(yellowPath, yellowColor)
 
-    // Green Triangle (Top)
-    val greenPath = Path().apply {
+    // Blue Triangle (Top)
+    val bluePath = Path().apply {
         moveTo(centerTopLeft.x, centerTopLeft.y)
         lineTo(centerMid.x, centerMid.y)
         lineTo(centerTopLeft.x + 3 * cellSize, centerTopLeft.y)
         close()
     }
-    drawPath(greenPath, greenColor)
+    drawPath(bluePath, blueColor)
 
-    // Yellow Triangle (Right)
-    val yellowPath = Path().apply {
+    // Red Triangle (Right)
+    val redPath = Path().apply {
         moveTo(centerTopLeft.x + 3 * cellSize, centerTopLeft.y)
         lineTo(centerMid.x, centerMid.y)
         lineTo(centerTopLeft.x + 3 * cellSize, centerTopLeft.y + 3 * cellSize)
         close()
     }
-    drawPath(yellowPath, yellowColor)
+    drawPath(redPath, redColor)
 
-    // Blue Triangle (Bottom)
-    val bluePath = Path().apply {
+    // Green Triangle (Bottom)
+    val greenPath = Path().apply {
         moveTo(centerTopLeft.x, centerTopLeft.y + 3 * cellSize)
         lineTo(centerMid.x, centerMid.y)
         lineTo(centerTopLeft.x + 3 * cellSize, centerTopLeft.y + 3 * cellSize)
         close()
     }
-    drawPath(bluePath, blueColor)
+    drawPath(greenPath, greenColor)
 
-    // Draw center star / gold circle
+    // Center star / gold circle
     drawCircle(Color(0xFFFFD54F), cellSize * 0.7f, centerMid)
     drawCircle(Color(0xFFFFF9C4), cellSize * 0.4f, centerMid)
+}
+
+fun DrawScope.drawSafeStar(cellSize: Float, gridX: Float, gridY: Float) {
+    val center = Offset((gridX + 0.5f) * cellSize, (gridY + 0.5f) * cellSize)
+    drawCircle(Color(0xFFB0BEC5).copy(alpha = 0.5f), cellSize * 0.35f, center)
 }
 
 fun DrawScope.drawBasePawnHoles(cellSize: Float, startCellX: Float, startCellY: Float, color: Color) {
